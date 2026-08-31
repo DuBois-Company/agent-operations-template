@@ -1,4 +1,7 @@
-<!-- banner: marketing integration inserts the picture element here -->
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.png">
+  <img src="docs/assets/banner-light.png" alt="Banner with an AGENT OPERATIONS eyebrow, the headline &quot;The Standard, the Harness, and the Worked Example&quot; ending in a blue period, and a signature band showing agent-operations-template beside The DuBois Company wordmark.">
+</picture>
 
 # agent-operations-template
 
