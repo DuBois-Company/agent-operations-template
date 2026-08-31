@@ -1,0 +1,41 @@
+# Runs the repository's own three checks against example/ on every push and
+# pull request. A template repo whose own checks fail is worse than no template,
+# so these are the same commands a contributor runs locally from the repo root.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Least privilege: the checks only read the checked out tree.
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # The three tools fall back to a structural check when PyYAML is absent,
+      # so they run on a bare interpreter. CI installs it to exercise the
+      # stricter parsing path.
+      - name: Install PyYAML
+        run: python -m pip install pyyaml
+
+      - name: Validate
+        run: python tools/validate.py
+
+      - name: Lint
+        run: python tools/lint.py
+
+      - name: Check grounding
+        run: python tools/check_grounding.py
