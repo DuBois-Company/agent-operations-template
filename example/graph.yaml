@@ -1,0 +1,421 @@
+# The knowledge graph for the example project: an auth service for a small
+# web application. Everything in this file is invented. It is here so the
+# harness in tools/ has a real, mid-project graph to check, and so a reader
+# can see what the standard looks like when it has been lived in for two
+# months rather than freshly scaffolded.
+#
+# Read it with example/PROGRESS.md open beside it. This file holds state and
+# structure -- what exists, what remains, who owns what, how it connects.
+# PROGRESS.md holds what a graph cannot -- rationale, verification, session
+# notes -- with every entry keyed to a node id here.
+#
+# Three top-level keys, in this order:
+#   agents    the roster, with the cost tier that decides routing
+#   nodes     one flat list of every live node, grouped only by comments
+#   archived  spent nodes, under a milestone key, as full bodies
+#
+# Today, in the fiction, is 2026-05-14.
+
+agents:
+  - {id: fable5, role: plan_route_review, cost: high}
+  - {id: opus5, role: implement, cost: mid}
+  - {id: sonnet5, role: prose, cost: low}
+
+nodes:
+
+  # ---------------------------------------------------------------- decisions
+  # Permanent. A decision is never deleted; a superseded one keeps its body
+  # and gains a superseded_by field, because the reasoning is the value.
+  # The edge between a decision and the work it constrains is written once,
+  # as informed_by on the task, so the two ends can never drift apart.
+
+  - id: D1
+    type: decision
+    fact: sessions use JWT with 24 hour expiry
+    evidence: PROGRESS.md entry 2026-03-16
+    trust: internal
+
+  - id: D2
+    type: decision
+    fact: signing stays HMAC-SHA256 with one shared secret until a key rotation story exists
+    evidence: PROGRESS.md entry 2026-03-19
+    trust: internal
+    revisit_when: a deployment needs two signing secrets live at once
+
+  - id: D3
+    type: decision
+    fact: the login response sets the session cookie SameSite=Strict rather than Lax
+    source: a framework advisory forwarded to the team inbox on 2026-04-28 - external content, so this was written down tainted the day it arrived and could not inform dispatch
+    trust: internal
+    cleared:
+      at: 2026-05-04
+      by: fable5
+      check: python -m unittest example.tests.test_middleware -q
+      finding: the advisory's claim was re-derived from the framework's own documented defaults rather than taken on the advisory's word, then pinned by a test that fails if the flag changes; taint lifted 2026-05-04 and T10 was dispatched two days later
+    evidence: [T10, PROGRESS.md entry 2026-05-04]
+
+  # ------------------------------------------------------------------ lessons
+  # Written at the 2026-04 milestone from the telemetry above, not from
+  # impressions. Each carries the node ids its finding rests on.
+
+  - id: L1
+    type: lesson
+    finding: both prose nodes routed to the cheapest tier passed review on the first attempt, at 9k and 7k tokens against a 0.6 prediction
+    action: route documentation and narrative nodes to sonnet5 by default, and give each one an executable criterion where the prose can carry one - T5 was gated on its own docstring examples running
+    evidence: [T5, T6]
+    stage: active
+    trust: internal
+    last_verified: 2026-04-27
+
+  - id: L2
+    type: lesson
+    finding: the cheapest tier implemented a config-only node at 11k tokens and passed review on the first attempt, against a 0.55 prediction written when the node was dispatched as an experiment
+    action: route config-only nodes - one named constant, its environment override, and a test that pins both - to sonnet5; keep signing and session-state nodes on opus5
+    evidence: [T7, X1]
+    stage: candidate
+    trust: internal
+    note: one attestation only. A second separate project has to attest this before it is promoted.
+
+  - id: L3
+    type: lesson
+    finding: the two nodes that needed a second attempt were both boundary work whose acceptance criterion named a test module but not the case that mattered; the retries cost roughly 22k tokens between them
+    action: when the deliverable is a boundary or an error path, name the test method in the acceptance criterion, not just the module it lives in
+    evidence: [T3, T8]
+    stage: active
+    trust: internal
+    last_verified: 2026-05-07
+
+  # --------------------------------------------------------------- experiment
+  # One per project, drawn from the top of the experiment backlog, placed on a
+  # node with slack so a loss costs one retry and nothing else.
+
+  - id: X1
+    type: experiment
+    hypothesis: the cheapest tier can implement config-only tasks
+    prediction: T7 passes review on the first attempt
+    applies_to: T7
+    drawn_from: experiment backlog entry dated 2026-04-27
+    result: win - T7 passed review on the first attempt on 2026-05-05 at 11k tokens, against a 0.55 prediction. Scored by fable5 the same day and written up as candidate lesson L2.
+
+  # ------------------------------------------------------------------- budget
+  # One node, one rough token ceiling, and the running total that stop-loss
+  # reads. Spend lands here at review, not at dispatch.
+
+  - id: B1
+    type: budget
+    cap: 400000
+    spent: 265000
+    status: open
+    note: 141k through the 2026-04 milestone and 124k on T7 through T10. T11 is still running and unbilled. Nine of the fourteen task nodes are done, T10 is awaiting its review, and four are still to run. At 66 percent of cap the burn is ahead of plan but not tripped; the next review re-checks it.
+
+  # ---------------------------------------------------------------- artifacts
+  # Durable outputs. They stay in the active list when their producing tasks
+  # are archived, so a future session can find them without reading history.
+
+  - id: A1
+    type: artifact
+    path: example/src/auth.py
+    fact: token issue and verify over the compact JWS form, HMAC-SHA256, standard library only
+    produced_by: [T1, T8]
+    evidence: 17 tests in example/tests/test_auth.py
+    trust: internal
+    status: current
+
+  - id: A2
+    type: artifact
+    path: example/src/config.py
+    fact: every auth setting in one immutable object, with environment overrides
+    produced_by: [T7]
+    evidence: 13 tests in example/tests/test_config.py
+    trust: internal
+    status: current
+
+  # -------------------------------------------------------------------- tasks
+  # Statuses are a closed vocabulary - blocked, ready, running, review, done -
+  # so a typo is a failure the harness catches rather than a sixth state.
+  # T1 through T6 are archived below; the live list starts at T7.
+
+  - id: T7
+    type: task
+    status: done
+    deliverable: every auth setting in one module with environment overrides, and no lifetime constant left in auth.py
+    acceptance:
+      - python -m unittest example.tests.test_config -q
+      - no lifetime or issuer constant remains in auth.py
+    depends_on: [T1]
+    informed_by: [D1]
+    assigned_to: sonnet5
+    inputs: [example/src/auth.py, example/src/config.py]
+    produces: [A2]
+    evidence: example/tests/test_config.py - 13 tests
+    telemetry:
+      predicted: 0.55
+      attempts: 1
+      escalated: no
+      review: pass on the first attempt - checked against D1 by fable5 on 2026-05-05
+      spend: 11k tokens
+    updated: {at: 2026-05-05, by: fable5}
+
+  - id: T8
+    type: task
+    status: done
+    deliverable: verify tolerates a verifying clock that lags the issuing clock by up to the configured skew
+    acceptance:
+      - python -m unittest example.tests.test_auth -q
+      - the suite pins test_expiry_boundary_is_inclusive_of_skew, added at review because the first criterion named only the module
+    depends_on: [T1, T7]
+    informed_by: [D1]
+    assigned_to: opus5
+    inputs: [example/src/auth.py]
+    produces: [A1]
+    evidence: example/tests/test_auth.py - ExpiryTest
+    telemetry:
+      predicted: 0.8
+      attempts: 2
+      escalated: no
+      review: pass on the second attempt - the first subtracted the tolerance from exp instead of adding it, which narrowed the window it was meant to widen
+      spend: 37k tokens
+    updated: {at: 2026-05-07, by: fable5}
+
+  - id: T9
+    type: task
+    status: done
+    deliverable: verify consults a revocation list so a logged-out session stops working before its 24 hour expiry
+    acceptance:
+      - python -m unittest example.tests.test_revocation -q
+      - a revoked session is refused inside the clock-skew window as well as outside it
+    depends_on: [T8]
+    informed_by: [D1, L3]
+    assigned_to: opus5
+    inputs: [example/src/auth.py, example/src/revocation.py]
+    evidence: example/tests/test_revocation.py - 11 tests
+    telemetry:
+      predicted: 0.7
+      attempts: 2
+      escalated: yes - fable5 took the second attempt on 2026-05-10 after the mid tier's first pass left revoked tokens verifying inside the skew window
+      review: pass after the escalation
+      spend: 52k tokens - 31k on the mid tier then 21k on the escalated attempt
+    updated: {at: 2026-05-11, by: fable5}
+
+  - id: T10
+    type: task
+    status: review
+    deliverable: the login and logout responses set the session cookie with the flags D3 fixed
+    acceptance:
+      - python -m unittest example.tests.test_middleware -q
+      - the login response carries HttpOnly and Secure and the cookie policy D3 records
+    depends_on: [T2, T9]
+    informed_by: [D3]
+    assigned_to: opus5
+    inputs: [example/src/middleware.py]
+    evidence: example/tests/test_middleware.py - LoginHeaderTest
+    telemetry:
+      predicted: 0.75
+      attempts: 1
+      escalated: no
+      review: null
+      spend: 24k tokens
+    updated: {at: 2026-05-13, by: fable5}
+    note: executable criteria pass. The judgment read is what is outstanding - this pair has not yet earned sampled review.
+
+  - id: T11
+    type: task
+    status: running
+    deliverable: a per-subject login throttle in the middleware, keyed on the rejection reasons the gate already emits
+    acceptance:
+      - python -m unittest discover -s example/tests -t . -q
+      - the sixth login attempt for one subject inside a minute is refused and the refusal names the subject
+    depends_on: [T2]
+    informed_by: [L3]
+    assigned_to: opus5
+    inputs: [example/src/middleware.py]
+    evidence: null
+    telemetry:
+      predicted: 0.65
+      attempts: 1
+      escalated: no
+      review: null
+      spend: null
+    updated: {at: 2026-05-14, by: fable5}
+
+  - id: T12
+    type: task
+    status: ready
+    deliverable: refresh token rotation - a refresh issues a new token and puts the old one on the revocation list
+    acceptance:
+      - python -m unittest discover -s example/tests -t . -q
+      - a rotated token stops verifying the moment its replacement is issued
+    depends_on: [T9]
+    informed_by: [D1, D2, L3]
+    assigned_to: opus5
+    inputs: [example/src/auth.py, example/src/revocation.py]
+    evidence: null
+    telemetry: {predicted: 0.6, attempts: 0, escalated: no, review: null, spend: null}
+    updated: {at: 2026-05-12, by: fable5}
+
+  - id: T13
+    type: task
+    status: ready
+    deliverable: operator notes for the auth module - what to set, what the defaults mean, what breaks when they are wrong
+    acceptance:
+      - python tools/validate.py --quick
+      - the notes state the 24 hour lifetime and name every environment override the config module reads
+    depends_on: [T7]
+    informed_by: [D1, L1]
+    assigned_to: sonnet5
+    inputs: [example/src/config.py, example/PROGRESS.md]
+    evidence: null
+    telemetry: {predicted: 0.8, attempts: 0, escalated: no, review: null, spend: null}
+    updated: {at: 2026-05-12, by: fable5}
+    note: no path to T11 or T12, so this runs in parallel with either.
+
+  - id: T14
+    type: task
+    status: blocked
+    deliverable: a scheduled sweep that drops rotated sessions from the revocation list once their tokens have expired
+    acceptance:
+      - python -m unittest discover -s example/tests -t . -q
+      - a swept list holds no entry whose token expired more than one skew width ago
+    depends_on: [T12]
+    informed_by: [L3]
+    assigned_to: opus5
+    inputs: [example/src/revocation.py]
+    evidence: null
+    telemetry: {predicted: 0.6, attempts: 0, escalated: no, review: null, spend: null}
+    updated: {at: 2026-05-12, by: fable5}
+    blocked_on: T12 - there is nothing to sweep until rotation exists
+
+archived:
+
+  milestone_2026-04_auth_core:
+    reason: the auth core landed and was verified - issue and verify, the request gate, the error taxonomy, the suite, and the prose that documents them. Spent planning nodes moved here so a full read of the live graph stays cheap; durable nodes stayed above.
+    closed: 2026-04-27
+    telemetry_rollup:
+      tasks: 6
+      first_attempt_passes: 5
+      retries: 1
+      escalations: 0
+      spend: 141k tokens
+      note: the retry on T3 and the retry on T8 a fortnight later are the evidence behind L3.
+    nodes:
+
+      - id: T1
+        type: task
+        status: done
+        deliverable: token issue and verify over the compact JWS form, signed HMAC-SHA256, standard library only
+        acceptance:
+          - python -m unittest example.tests.test_auth -q
+          - a token issued under one secret does not verify under another
+        depends_on: []
+        informed_by: [D1, D2]
+        assigned_to: opus5
+        inputs: [example/src/auth.py]
+        produces: [A1]
+        evidence: example/tests/test_auth.py - RoundTripTest and TamperTest
+        telemetry:
+          predicted: 0.75
+          attempts: 1
+          escalated: no
+          review: pass on the first attempt
+          spend: 34k tokens
+        updated: {at: 2026-03-24, by: fable5}
+
+      - id: T2
+        type: task
+        status: done
+        deliverable: a middleware wrapper that lets a request through only when it carries a valid token
+        acceptance:
+          - python -m unittest example.tests.test_middleware -q
+          - a protected route answers 401 when the header is absent and 401 when the token is forged
+        depends_on: [T1]
+        informed_by: [D1]
+        assigned_to: opus5
+        inputs: [example/src/middleware.py]
+        evidence: example/tests/test_middleware.py - GateTest
+        telemetry:
+          predicted: 0.7
+          attempts: 1
+          escalated: no
+          review: pass on the first attempt
+          spend: 28k tokens
+        updated: {at: 2026-03-31, by: fable5}
+
+      - id: T3
+        type: task
+        status: done
+        deliverable: one exception subclass per rejection reason, so the gate can log why without parsing message text
+        acceptance:
+          - python -m unittest example.tests.test_auth -q
+          - every rejection path raises rather than returning a value the caller could read as success
+        depends_on: [T1]
+        informed_by: [D1]
+        assigned_to: opus5
+        inputs: [example/src/auth.py]
+        evidence: example/tests/test_auth.py - TamperTest
+        telemetry:
+          predicted: 0.7
+          attempts: 2
+          escalated: no
+          review: pass on the second attempt - the first returned None on malformed input, which the gate would have read as a pass. The criterion had named the module and not the case.
+          spend: 41k tokens
+        updated: {at: 2026-04-08, by: fable5}
+
+      - id: T4
+        type: task
+        status: done
+        deliverable: the test suite for issue, verify, expiry and tamper cases, with every clock pinned
+        acceptance:
+          - python -m unittest example.tests.test_auth -q
+          - no test reads the wall clock, so a suite that passes today passes in a year
+        depends_on: [T1, T3]
+        informed_by: [D1]
+        assigned_to: opus5
+        inputs: [example/tests/test_auth.py]
+        evidence: example/tests/test_auth.py - 17 tests
+        telemetry:
+          predicted: 0.85
+          attempts: 1
+          escalated: no
+          review: pass on the first attempt
+          spend: 22k tokens
+        updated: {at: 2026-04-14, by: fable5}
+
+      - id: T5
+        type: task
+        status: done
+        deliverable: module docstrings for the auth core, each carrying a worked example a reader can run
+        acceptance:
+          - python -m unittest example.tests.test_docstrings -q
+          - every module in example/src carries a docstring and every example inside one executes
+        depends_on: [T1, T2, T3]
+        informed_by: [D1]
+        assigned_to: sonnet5
+        inputs: [example/src/auth.py, example/src/middleware.py]
+        evidence: example/tests/test_docstrings.py
+        telemetry:
+          predicted: 0.6
+          attempts: 1
+          escalated: no
+          review: pass on the first attempt - the docstring examples ran clean, which is what made this cheap to review
+          spend: 9k tokens
+        updated: {at: 2026-04-21, by: fable5}
+
+      - id: T6
+        type: task
+        status: done
+        deliverable: the rationale and verification entries for the auth core in PROGRESS.md, keyed to node ids
+        acceptance:
+          - python tools/validate.py --quick
+          - every entry names the node it belongs to and the date it was verified
+        depends_on: [T4, T5]
+        informed_by: [D1, D2]
+        assigned_to: sonnet5
+        inputs: [example/PROGRESS.md]
+        evidence: example/PROGRESS.md - Rationale and Verification log
+        telemetry:
+          predicted: 0.6
+          attempts: 1
+          escalated: no
+          review: pass on the first attempt
+          spend: 7k tokens
+        updated: {at: 2026-04-24, by: fable5}
