@@ -1,6 +1,6 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.png">
-  <img src="docs/assets/banner-light.png" alt="Banner with an AGENT OPERATIONS eyebrow, the headline &quot;The Standard, the Harness, and the Worked Example&quot; ending in a blue period, and a signature band showing agent-operations-template beside The DuBois Company wordmark.">
+  <img src="docs/assets/banner-light.png" alt="Banner with an AGENT OPERATIONS eyebrow, the headline &quot;The Standard, the Harness, and the Worked Example&quot; ending in a blue period, and a signature band showing agent-operations-template beside the DuBois Company wordmark.">
 </picture>
 
 # agent-operations-template
@@ -13,7 +13,7 @@ A runnable template for orchestrating multi-agent work on a shared knowledge gra
 
 agent-operations-template is a complete, runnable template for orchestrating multi-agent work on a shared knowledge graph. It carries four things, each checked against the others rather than merely asserted: the standard itself, the orchestration block that turns a project's memory into a graph instead of a list; a harness, three scripts that turn a task's acceptance criteria into exit codes instead of adjectives; the control-plane file schemas, the shapes of the shared coordination files a team of projects reads and writes; and a synthetic worked example, a fourteen-task auth-service graph caught at a real mid-project state, with a source tree and a test suite its own acceptance criteria run against.
 
-The DuBois Company publishes this repository as a companion to its implementer's guide, [agent-operations-handbook](https://github.com/DuBois-Company/agent-operations-handbook), which walks through applying the standard by hand. This repository is the standard's own text, plus the tooling that checks a project is actually following it.
+DuBois Company publishes this repository as a companion to its implementer's guide, [agent-operations-handbook](https://github.com/DuBois-Company/agent-operations-handbook), which walks through applying the standard by hand. This repository is the standard's own text, plus the tooling that checks a project is actually following it.
 
 ## Who It Is For
 
@@ -98,4 +98,4 @@ One more thing worth knowing before you run the tools yourself: `check_grounding
 
 This repository is licensed under the MIT License. See [LICENSE](LICENSE) for the full text.
 
-The DuBois Company name, logos, and brand assets are trademarks of The DuBois Company and are not licensed under the repository license.
+The DuBois Company name, logos, and brand assets are trademarks of DuBois Company and are not licensed under the repository license.
