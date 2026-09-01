@@ -36,11 +36,11 @@ nodes:
     inputs: [src/auth.ts]
     evidence: null
     telemetry: {predicted: 0.8, attempts: 0, escalated: no, review: null, spend: null}
-    updated: {at: 2026-08-27, by: fable5}
+    updated: {at: 2026-03-27, by: fable5}
   - id: D1
     type: decision
     fact: sessions use JWT with 24 hour expiry
-    evidence: PROGRESS.md entry 2026-08-20
+    evidence: PROGRESS.md entry 2026-03-20
     trust: internal          # internal | tainted
   - id: L1
     type: lesson
