@@ -29,7 +29,7 @@ class DocstringPresenceTest(unittest.TestCase):
             self.assertTrue((module.__doc__ or "").strip(),
                             "%s has no module docstring" % module.__name__)
 
-    def test_the_two_public_entry_points_are_documented(self):
+    def test_the_public_entry_points_are_documented(self):
         for func in (auth.issue_token, auth.verify_token,
                      middleware.require_token, middleware.login_response_headers):
             self.assertTrue((func.__doc__ or "").strip(),

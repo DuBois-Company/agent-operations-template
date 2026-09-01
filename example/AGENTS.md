@@ -7,7 +7,7 @@ show. The deliverable is an auth service for a small web application: session
 tokens issued and verified against `example/src/`, with a test suite under
 `example/tests/` that every acceptance criterion in the graph points at. There
 are no client files and no secrets here; `EXAMPLE_AUTH_SECRET` is read from the
-environment and the checked-in default is a labelled placeholder that strict
+environment and the checked-in default is a labeled placeholder that strict
 mode refuses. Session state lives in exactly two files: `example/graph.yaml`,
 which is the source of truth for what exists and what remains, and
 `example/PROGRESS.md`, which carries rationale, the verification log, and the
@@ -23,7 +23,7 @@ resolve their paths relative to themselves, so the directory you cloned into
 does not matter.
 
 - `python tools/validate.py` — the test command. Passes when the graph parses and satisfies its schema, PROGRESS.md carries its three dated sections and a grounding line, this file and AGENTS.md are byte-identical, and every executable acceptance criterion on a done task exits 0.
-- `python tools/lint.py` — the lint command. Passes when the files under `example/` hold the shapes the harness and the instruction files promise, with nothing stale, misspelled, or unreferenced.
+- `python tools/lint.py` — the lint command. The cheap can-the-control-plane-be-read-at-all check: passes when graph.yaml is present with its three markers and every data file under `example/` parses.
 - `python tools/check_grounding.py` — the delegation guard. Warn-only by design: it always exits 0, and it prints a warning when PROGRESS.md records no grounding entry dated today. In this example it will warn, because the session notes are dated 2026-05-14 and you are not reading this on that day; that is the guard working, not the guard failing.
 
 The hooks in `.claude/settings.json` run the test command after every edit and

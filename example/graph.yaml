@@ -296,7 +296,7 @@ archived:
       retries: 1
       escalations: 0
       spend: 141k tokens
-      note: the retry on T3 and the retry on T8 a fortnight later are the evidence behind L3.
+      note: the retry on T3 and, in the following milestone, the retry on T8 are the evidence behind L3 (T8 annotation added at the 2026-05-07 review).
     nodes:
 
       - id: T1

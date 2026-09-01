@@ -24,13 +24,13 @@ WHAT IT CHECKS (all against ./example/)
      predicted, attempts, escalated, review, spend.
   6. At least one budget node exists, and each budget node carries cap, spent,
      and a status of open or tripped.
-  7. archived holds at least one milestone, each milestone holds nodes:, and
+  7. archived may be empty on a young project; each milestone it holds carries nodes:, and
      every archived node body is a full body -- it carries id and type, and its
      task bodies face checks 4 and 5 like any other.
   8. PROGRESS.md carries the three required sections, every top-level entry in
      them is dated, and at least one session note carries the grounding marker.
   9. Every node id cited in PROGRESS.md exists in the graph. Citations are
-     recognised by the id prefixes the graph actually uses, so prose is safe.
+     recognized by the id prefixes the graph actually uses, so prose is safe.
  10. CLAUDE.md and AGENTS.md are byte-identical. Two agent runtimes, one set of
      instructions; drift between them is the bug this catches.
  11. Every done task's executable acceptance criteria actually run. Each is a
@@ -207,7 +207,7 @@ def parse_strict(text):
         "mode": "yaml",
         "has_agents": bool(data.get("agents")),
         "has_nodes": data.get("nodes") is not None,
-        "has_archived": isinstance(archived, dict) and bool(archived),
+        "has_archived": "archived" in data,
         "milestones": milestones,
     }
     return records, meta
@@ -266,7 +266,7 @@ def clean_item(text):
 
 
 def split_flow(text):
-    """Split a flow sequence body on its top-level commas, honouring quotes."""
+    """Split a flow sequence body on its top-level commas, honoring quotes."""
     items, buf, depth, quote = [], [], 0, None
     for char in text:
         if quote:
@@ -396,7 +396,7 @@ def parse_structural(text):
         "mode": "structural",
         "has_agents": bool(blocks.get("agents", "").strip()),
         "has_nodes": "nodes" in blocks,
-        "has_archived": bool(archived_block.strip()),
+        "has_archived": "archived" in blocks,
         "milestones": milestones,
     }
     return records, meta
@@ -493,9 +493,6 @@ def check_graph(records, meta):
 
     if budgets == 0:
         fail("example/graph.yaml holds no budget node -- spend has nowhere to land")
-    if not meta.get("milestones"):
-        if meta.get("has_archived"):
-            fail("example/graph.yaml: archived: holds no milestone")
     if len(errors) == start:
         note("graph OK: %d node(s) -- %d task(s), %d budget(s), %d archived milestone(s)"
              % (len(records), tasks, budgets, len(meta.get("milestones") or [])))

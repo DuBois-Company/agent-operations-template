@@ -43,7 +43,7 @@ ROOT = Path(__file__).resolve().parent.parent
 EXAMPLE = ROOT / "example"
 GRAPH = EXAMPLE / "graph.yaml"
 
-# (what a reader would call it, how it is actually recognised). The patterns are
+# (what a reader would call it, how it is actually recognized). The patterns are
 # anchored so that a near miss -- `type: budgetary`, or an `agents:` key nested
 # inside some other block -- fails instead of passing on a substring.
 REQUIRED_MARKERS = (

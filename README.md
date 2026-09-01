@@ -23,7 +23,7 @@ Anyone running more than one agent against a shared body of work across more tha
 
 1. **Copy the block.** Open `standard/orchestration-block.md` and copy the fenced block under "The block, repository-surface rendering" into your project's `CLAUDE.md` and `AGENTS.md`, verbatim. Replace `<control-plane>/` with the path to your own shared coordination folder, everywhere it appears.
 2. **Run the initializer checklist.** The block's "Initializer session" section is a checklist, not prose: verify your global instructions carry the standard, write the project's instruction files, register the project in your registry, scaffold `graph.yaml` and `PROGRESS.md`, build the harness, install the hooks, and prove every check runs before any feature work starts.
-3. **Scaffold from `example/`.** Copy the shapes in `example/graph.yaml` and `example/PROGRESS.md`, the agent roster, the node types, the telemetry keys, the three `PROGRESS.md` sections, and replace the auth-service content with your own domain.
+3. **Scaffold from `example/`.** Copy the shapes in `example/graph.yaml` and `example/PROGRESS.md`, the agent roster, the node types, the telemetry keys, the three `PROGRESS.md` sections, and replace the auth-service content with your own domain. Keep the `archived:` key; empty is fine until your first milestone closes.
 4. **Run the three tools.** From the repository root: `python tools/lint.py`, `python tools/validate.py`, `python tools/check_grounding.py`. All three exit 0 against this repository's own `example/` as shipped; run them again once you have replaced `example/` with your own project to confirm your files hold the same shapes.
 
 ## Contents
@@ -68,7 +68,7 @@ The repository's test command, and the harness's central claim made concrete: ac
 
 Invocation: `python tools/validate.py`, or `python tools/validate.py --quick` to print nothing on success while still printing every failure. A `KG_HARNESS_NO_EXEC` environment variable guards against the recursion an acceptance criterion of `python tools/validate.py --quick` would otherwise cause: when it is set, the nested run skips re-executing acceptance commands and says so, while still performing every other check.
 
-Format couplings: `example/graph.yaml` top-level keys `agents:`, `nodes:`, `archived:`; node keys `id:`, `type:`, `status:`, `acceptance:`, `telemetry:` with its five keys; budget nodes with `cap:`, `spent:`, `status:`; each archived milestone holding full node bodies under `nodes:`. `example/PROGRESS.md` headings exactly `## Rationale`, `## Verification log`, `## Session notes`; every top-level entry beginning `- YYYY-MM-DD`; at least one session note carrying the grounding marker, an em dash, a space, and "Grounding:". `example/CLAUDE.md` byte-identical to `example/AGENTS.md`. Executable acceptance criteria are literal strings starting `python ` that exit 0 when run from the repository root.
+Format couplings: `example/graph.yaml` top-level keys `agents:`, `nodes:`, `archived:`; node keys `id:`, `type:`, `status:`, `acceptance:`, `telemetry:` with its five keys; budget nodes with `cap:`, `spent:`, `status:`; each archived milestone holding full node bodies under `nodes:`. `example/PROGRESS.md` headings exactly `## Rationale`, `## Verification log`, `## Session notes`; every top-level entry beginning `- YYYY-MM-DD`; at least one session note carrying the grounding marker, an em dash, a space, and "Grounding:". The three sections are required; additional dated sections, such as a closing lessons section, are permitted. `example/CLAUDE.md` byte-identical to `example/AGENTS.md`. Executable acceptance criteria are literal strings starting `python ` that exit 0 when run from the repository root.
 
 ### `tools/check_grounding.py`, the delegation guard
 
@@ -80,7 +80,7 @@ Format couplings: a grounding entry is a line carrying today's date in ISO form,
 
 ## The Example
 
-`example/` is fiction: a small team's auth service, three months into a project that is nowhere near its first day and nowhere near done. It exists to show what the standard looks like once it has been lived in rather than freshly scaffolded, so every shape the harness checks appears at least once with a real history behind it.
+`example/` is fiction: a small team's auth service, two months into a project that is nowhere near its first day and nowhere near done. It exists to show what the standard looks like once it has been lived in rather than freshly scaffolded, so every shape the harness checks appears at least once with a real history behind it.
 
 - **An archived milestone with full bodies.** `milestone_2026-04_auth_core` holds six task nodes, T1 through T6, archived with their complete bodies rather than bare ids, because an id-only archive would have destroyed the telemetry two of the graph's lessons rest on.
 - **Telemetry with an escalation and a retry.** T9 needed a second attempt after the first left revoked tokens verifying inside the clock-skew window, and was escalated rather than accepted with a known hole; the added cost is recorded on the node and rolled into the budget. T8 needed a second attempt for a different reason, a tolerance subtracted from an expiry instead of added to it, and that pair, together with an earlier retry on T3, is the recorded evidence behind lesson L3.
